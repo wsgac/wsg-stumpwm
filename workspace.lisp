@@ -10,3 +10,5 @@
 (define-key *top-map* (kbd "s-3") "gselect 3")
 (define-key *top-map* (kbd "s-4") "gselect 4")
 (define-key *top-map* (kbd "s-5") "gselect 5")
+
+(define-key *top-map* (kbd "s-l") "exec slock")
