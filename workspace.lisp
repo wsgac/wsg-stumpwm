@@ -16,9 +16,8 @@
 (setf *screen-mode-line-format*
       (list '(:eval (run-shell-command
                      "date '+%R %F %a [week %W]' | tr -d [:cntrl:]" t))
-	    " | Bat: %B | Layout: %L | [^B%n^b] %W"
+	    " | Bat: %B | Layout: %L"
             ))
 
-(ql:quickload :battery-portable)
 
-(add-stumpwm-startup-hook 'mode-line)
+;; (add-stumpwm-startup-hook 'mode-line)

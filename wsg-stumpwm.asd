@@ -12,11 +12,11 @@ To activate, place the following in your .stumpwm file
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :serial t
-  :depends-on (#:local-time #:slynk)
+  :depends-on (#:local-time #:battery-portable #:kbd-layouts)
   :components ((:file "package")
                (:file "wsg-stumpwm")
                (:file "mouse-keyboard")
-               (:file "swank")
+               ;; (:file "swank")
 	       ;; (:file "slynk")
                (:file "workspace")))
 
