@@ -1,0 +1,121 @@
+;; -*-lisp-*-
+
+(in-package :stumpwm)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Libraries and modules ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(ql:quickload '(:swank :cl-ppcre :battery-portable :kbd-layouts :stumptray :net :mem))
+
+;;;;;;;;;;;;;;;;;;
+;; Swank server ;;
+;;;;;;;;;;;;;;;;;;
+
+(swank:create-server :port 12345 :dont-close t)
+
+;;;;;;;;;;;;;;;;;;;
+;; Create groups ;;
+;;;;;;;;;;;;;;;;;;;
+
+(gnewbg "www")
+(gnewbg "media")
+(gnewbg "hack")
+(gnewbg-float "float")
+;; (gnewbg-float "misc (float)")
+
+;;;;;;;;;;;;;;
+;; Modeline ;;
+;;;;;;;;;;;;;;
+
+;; Position modeline
+(dolist (head (all-heads))
+  (unless (head-mode-line head)
+    (toggle-mode-line (current-screen) head)))
+
+;; Modeline display structure
+(setf *screen-mode-line-format*
+      (list '(:eval (run-shell-command "date '+%R, %F %a' | tr -d [:cntrl:]" t))
+	    " | Bat: %B | Layout: %L | [^B%n^b] %W"))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Keyboard layout ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+(setf kbd-layouts:*caps-lock-behavior* :ctrl)
+
+(kbd-layouts:keyboard-layout-list "pl" "ru -variant phonetic" "pl -variant dvorak")
+
+;;;;;;;;;;;;;;;;;;
+;; Key bindings ;;
+;;;;;;;;;;;;;;;;;;
+
+(define-key *top-map* (kbd "C-F4") "switch-keyboard-layout")
+(define-key *top-map* (kbd "s-SPC") "switch-keyboard-layout")
+;; (define-key *top-map* (kbd "C-F5") "switch-to-hebrew")
+;; (undefine-key *top-map* (kbd "C-F5"))
+(define-key *root-map* (kbd "C-c") "exec st -f terminus")
+(define-key *root-map* (kbd "C-e") "exec emacs")
+(define-key *root-map* (kbd "C-l") "exec slock")
+(define-key *root-map* (kbd "C-k") "exec conkeror")
+(define-key *root-map* (kbd "C-f") "exec firefox")
+(define-key *top-map* (kbd "s-1") "gselect 1")
+(define-key *top-map* (kbd "s-2") "gselect 2")
+(define-key *top-map* (kbd "s-3") "gselect 3")
+(define-key *top-map* (kbd "s-4") "gselect 4")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mouse/touchpad settings ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setf *mouse-focus-policy* :click)
+(defcommand touchpad-turn-off () ()
+  (let ((cmd "synclient TouchpadOff=1"))
+    (run-shell-command cmd t)))
+(defcommand touchpad-turn-on () ()
+  (let ((cmd "synclient TouchpadOff=0"))
+    (run-shell-command cmd t)))
+
+(touchpad-turn-off)
+
+;;;;;;;;;;;;;;;;
+;; Appearance ;;
+;;;;;;;;;;;;;;;;
+;; (set-font "-*-terminus-*-r-*-*-12-*-*-*-*-*-iso10646-*")
+(set-font "-*-terminus-*-r-*-*-12-*-*-*-*-*-iso10646-*")
+;; Plain steelblue background
+;; (run-shell-command "xsetroot -solid steelblue &")
+;; Wallpaper
+(defvar *wallpaper* "/home/wsg/Pictures/Wallpapers/pdp10.jpg")
+;; (run-shell-command (format nil "which xsetbg && xsetbg -fullscreen -gray ~a" *wallpaper*))
+(run-shell-command (format nil "which xsetbg && xsetbg -fullscreen ~a" *wallpaper*))
+(run-shell-command "xsetroot -cursor_name left_ptr")
+
+;;;;;;;;;;;;;;;;;;;
+;; Service start ;;
+;;;;;;;;;;;;;;;;;;;
+;; (run-shell-command "trayer --SetDockType false --transparent true --expand false")
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Synchronization ;;
+;;;;;;;;;;;;;;;;;;;;;
+;;(defparameter *local-sync-dir* #p"~/Dropbox/")
+;;(defcommand dropbox-import () ()
+
+;;;;;;;;;;
+;; Misc ;;
+;;;;;;;;;;
+(defvar *stumpwm-sudo-program* "/usr/local/bin/stumpwm-sudo")
+
+(defcommand stumpwm-input (prompt) ((:string "prompt: "))
+  "Prompts the user for one line of input."
+  (read-one-line (current-screen) prompt))
+
+(defcommand stumpwm-password (prompt) ((:string "password: "))
+  "Prompts the user for password."
+  (read-one-line (current-screen) prompt :password t))
+
+(defcommand run-shell-command-as-root (cmd &optional collect-output-p) ((:shell "/bin/sh -c"))
+  "Runs shell command as root. Prompts for the password."
+  (run-shell-command (format nil "~a ~a" *stumpwm-sudo-program* cmd) collect-output-p))
+

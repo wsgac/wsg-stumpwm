@@ -1,0 +1,95 @@
+;; -*- lisp -*-
+
+;; Slynk
+;; (push #p"/home/wsg/hack/lisp/sly/slynk/" asdf:*central-registry*)
+;; (ql:quickload :slynk)
+
+;; (asdf:load-system "wsg-stumpwm")
+;; (ql:quickload :wsg-stumpwm)
+;; (stumpwm::run-stumpwm-startup-hook)
+
+;;;;;;;;;;;;;;;;;
+;; Swank/SLIME ;;
+;;;;;;;;;;;;;;;;;
+(defparameter *swank-server-port* 12345)
+
+(pushnew #P"/home/wsg/hack/emacs/slime/" asdf:*central-registry*)
+(ql:quickload :swank)
+;; (load "~/hack/emacs/slime/swank-loader.lisp")
+(swank:create-server :port *swank-server-port*
+                     :dont-close t)
+
+;;;;;;;;;;;;;;;
+;; Workspace ;;
+;;;;;;;;;;;;;;;
+
+(gnewbg "www")
+(gnewbg "media")
+(gnewbg "hack")
+(gnewbg-float "float")
+
+;;;;;;;;;;;;;;;;;
+;; Keybindings ;;
+;;;;;;;;;;;;;;;;;
+
+(define-key *top-map* (kbd "s-1") "gselect 1")
+(define-key *top-map* (kbd "s-2") "gselect 2")
+(define-key *top-map* (kbd "s-3") "gselect 3")
+(define-key *top-map* (kbd "s-4") "gselect 4")
+(define-key *top-map* (kbd "s-5") "gselect 5")
+
+(define-key *top-map* (kbd "s-l") "exec slock")
+
+;;;;;;;;;;;;;;
+;; Modeline ;;
+;;;;;;;;;;;;;;
+
+;; (setf *screen-mode-line-format*
+;;       (list '(:eval (run-shell-command
+;;                      "date '+%R %F %a [week %W]' | tr -d [:cntrl:]" t))
+;; 	    " | Bat: %B | Layout: %L"
+;;             ))
+
+(ql:quickload :battery-portable)
+
+(setf *screen-mode-line-format*
+      (list '(:eval (run-shell-command
+                     "date '+%R %F %a [week %W]' | tr -d [:cntrl:]" t))
+	    " | Bat: %B"
+            ))
+
+(enable-mode-line (current-screen) (current-head) t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mouse/touchpad settings ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Touchpad - OpenBSD
+#+openbsd
+(defcommand touchpad-turn-off () ()
+  (let ((cmd "synclient TouchpadOff=1"))
+    (run-shell-command cmd t)))
+#+openbsd
+(defcommand touchpad-turn-on () ()
+  (let ((cmd "synclient TouchpadOff=0"))
+    (run-shell-command cmd t)))
+
+(defun setup-mouse ()
+  ;; Options: :ignore :sloppy :click
+  (setf *mouse-focus-policy* :click)
+  #+(or openbsd)
+  (touchpad-turn-off))
+
+(setup-mouse)
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Keyboard layout ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+(ql:quickload :kbd-layouts)
+
+(defun setup-keyboard ()
+  (kbd-layouts::keyboard-layout-list "pl" "ru -variant phonetic")
+  (setf kbd-layouts::*caps-lock-behavior* :ctrl))
+
+(setup-keyboard)
